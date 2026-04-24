@@ -1,0 +1,115 @@
+# AI Reflection and Prompts
+**ENGR 010 Group Project — Power Systems Analysis and Monitoring**
+
+---
+
+## Part 1: AI Prompts with Annotations
+
+---
+
+### Prompt 1 — Project Setup and Code Generation
+
+**Prompt given to Claude:**
+
+> I'm working on a group project for my intro engineering class (ENGR 010). We're doing the Electrical Engineering option, which is a Power Systems Analysis and Monitoring project. Here's what we need to build:
+>
+> A Python application that:
+> - Imports power system data from a CSV file with columns: timestamp, station_id, voltage_pu, current_pu, real_power_mw, reactive_power_mvar, power_factor
+> - Has data from 3 substations (SUB_001, SUB_002, SUB_003) over 6 months of hourly measurements
+> - The data has daily load patterns (peak during day, low at night), seasonal patterns (higher in summer), and some injected anomalies — a voltage sag in SUB_001 on March 15th, and power factor issues in SUB_002 during May
+>
+> We need to satisfy these technical requirements:
+> - At least 5 custom functions with docstrings
+> - Both for loops AND while loops somewhere in the code
+> - if/elif/else decision structures
+> - try/except error handling
+> - Lists and dictionaries as data structures
+> - NumPy arrays for any signal processing
+> - At least 3 different types of Matplotlib plots
+> - Code organized into multiple Python files
+>
+> The analysis features we need are:
+> - Basic statistics (mean, median, standard deviation) per station
+> - Load pattern identification (daily and seasonal)
+> - Comparing measurements against grid standards (voltage should be 0.95–1.05 pu, power factor should be ≥ 0.90)
+> - Power quality indices
+> - Basic fault detection
+>
+> The visualization features we need are:
+> - Time series plots of electrical parameters
+> - A power triangle visualization
+> - An interactive dashboard or creative feature
+>
+> We also need a sample data generation script that creates the CSV.
+>
+> Please create: (1) analysis.py with all the analysis functions, (2) visualization.py with all the plotting functions, and (3) a Jupyter notebook called power_system_dashboard.ipynb that imports from both modules and walks through all the analysis. Also create ee_sample_data.py that generates the CSV.
+
+---
+
+**Annotation:**
+
+*Why did we ask this?*
+We had all the project requirements from the spec sheet and wanted Claude to help us put together a solid structure instead of starting from a blank file and guessing at how to organize everything. We knew the concepts from class (loops, functions, if/else) but weren't sure how they'd all fit together in a real data analysis project. We figured giving Claude the full picture upfront would get us further than asking one question at a time.
+
+*Did Claude answer the question well? How do we know?*
+Mostly yes. Claude produced all four files with more than 5 functions (7 in analysis.py alone), included both `for` and `while` loops, used `try/except` in `load_data()`, and created multiple plot types (line charts, bar charts, a heatmap, a power triangle, and a scatter fault plot). We checked these against the requirement checklist from the spec and they all matched. We were also able to read through the functions and understand what each one was doing — the docstrings helped a lot with that.
+
+*Was there anything that didn't come out right?*
+The sample data generation script (`ee_sample_data.py`) had two bugs that we caught separately. The frequency string `'H'` for pandas was deprecated and needed to be `'h'`. More importantly, when the script injected anomalies (the voltage sag and the power factor issue), it modified those columns but didn't recalculate the dependent columns like `current_pu` and `reactive_power_mvar`. That meant the data was internally inconsistent — for example, voltage dropped but current stayed the same, which doesn't make physical sense. We asked Claude to fix both of those bugs and it did.
+
+---
+
+### Prompt 2 — Bug Fix: Deprecated Frequency and Inconsistent Anomaly Data
+
+**Prompt given to Claude:**
+
+> Can you figure out what is wrong with this code? [shared ee_sample_data.py]
+
+**Annotation:**
+
+*Why did we ask this?*
+After the initial generation, we ran the data script and got a deprecation warning from pandas about `'H'`. We also noticed when we plotted the voltage sag event that the current values didn't change on March 15th even though the voltage clearly dropped — that's not physically realistic. We wanted Claude to catch both issues without us having to fully diagnose them ourselves.
+
+*Did Claude answer well?*
+Yes. Claude identified both bugs clearly and explained why each one was a problem before fixing anything. The explanation of the anomaly injection bug was especially useful — it helped us understand *why* P = V×I means that if V drops and P stays roughly the same, I has to go up. That connected back to what we'd seen in the EE content and helped us actually learn something, not just get working code.
+
+---
+
+## Part 2: Reflection on Using AI for Programming
+
+---
+
+**Did you enjoy using AI to help with this project?**
+
+Honestly, yes — more than we expected. The part that was most useful wasn't just getting code quickly, it was having something to react to. Starting from a blank file when you're not sure how to structure a project is kind of paralyzing. Having Claude generate a full draft meant we spent our time reading, understanding, and evaluating instead of staring at an empty screen. That felt like a much better use of our time as students who are still learning.
+
+---
+
+**What did AI work well for? What didn't it do as well?**
+
+*Worked well:*
+- Generating boilerplate structure — things like setting up the Jupyter notebook sections, writing docstrings, and getting the file organization right. These tasks are tedious and don't really teach you anything, so having AI handle them was great.
+- Explaining concepts on demand. When we didn't understand why the power triangle was drawn a certain way, or why the rolling z-score method works for fault detection, we could ask and get a clear explanation tied directly to the code we were looking at.
+- Catching our own bugs. When we described the symptoms (current not changing during a voltage sag), Claude diagnosed the root cause correctly and explained the fix.
+
+*Didn't work as well:*
+- The initial code wasn't perfect on the first try. The anomaly injection bug was a real issue — if we had just trusted the output and submitted without reading it carefully, our data would have been physically inconsistent. AI is a first draft, not a final answer.
+- The `while` loop in `check_grid_standards()` feels a little forced — using a `while` loop to iterate over a list of stations is something you'd normally write as a `for` loop. It works, but it's there mainly to satisfy the project requirement rather than because it's the most natural choice. That's something a human reviewer might notice, and it's a good reminder that AI optimizes for satisfying stated requirements, not necessarily for writing the most elegant code.
+
+---
+
+**Did using AI save you time?**
+
+Significantly. Estimating conservatively, writing all three Python files and the notebook from scratch — with proper docstrings, multiple plot types, and all the technical requirements checked off — would have taken our group many hours spread across multiple sessions. We got a working, well-structured draft in a single session and spent the remaining time understanding it, testing it, and cleaning up the bugs. For a project at this scope, that's a meaningful difference.
+
+---
+
+**Were the concepts used in the AI-generated code things you had already seen and understood?**
+
+Most of them, yes. Loops, if/else, functions, try/except, and basic Pandas/Matplotlib usage were all things we had covered in class. The parts that were newer to us were:
+
+- **Rolling statistics for fault detection** — `rolling(window=24).mean()` and computing z-scores. We hadn't seen that in class, but it made sense once Claude explained that it's just asking "how far is this reading from what's normal for this time of day?" We chose to keep it because it produces genuinely useful output (it correctly finds the March 15th sag) and the logic is understandable even if the syntax was new.
+- **NumPy `arctan2` for the power triangle angle** — We understood the geometry, but `np.arctan2(Q, P)` was new. Once we read the docstring and traced through the math, it made sense: it gives you the angle φ in the correct quadrant, which matters when Q is negative.
+- **`imshow` for the heatmap** — We'd only used `plt.plot` and `plt.bar` in class. The heatmap was Claude's suggestion for the creativity requirement and we thought it was a genuinely good idea, so we kept it. We tested it by checking that the bright cells (high load) appeared at mid-day hours in June, which matched our expectations from the bar charts.
+
+Overall, we were careful not to include anything in the final project that we couldn't explain if asked about it in the presentation Q&A. If Claude used something we didn't recognize, we either looked it up until we understood it or asked Claude to explain it before deciding whether to keep it.
